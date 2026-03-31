@@ -43,16 +43,10 @@ export const TAG_HIERARCHY: TagCategory[] = [
     children: ["teater", "dans", "kunst", "foredrag", "historie"],
   },
   {
-    key: "fotball",
-    label: "Fotball",
-    icon: "circle-dot",
-    children: ["fotball"],
-  },
-  {
     key: "sport",
     label: "Sport & Friluft",
     icon: "mountain",
-    children: ["friluftsliv", "tur", "kyst", "natur"],
+    children: ["fotball", "friluftsliv", "tur", "kyst", "natur"],
   },
   {
     key: "barn",
