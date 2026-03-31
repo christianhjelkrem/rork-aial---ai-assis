@@ -14,11 +14,12 @@ import {
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search, X, CalendarDays, Calendar, ChevronDown, Check, MapPin, Ticket } from "lucide-react-native";
+import { Search, X, CalendarDays, Calendar, ChevronDown, ChevronRight, Check, MapPin, Ticket, Film, Music, Palette, Mountain, Baby, Laugh } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { EventData } from "@/types/event";
 import { fetchEvents, fetchAllTags, fetchAllCities } from "@/lib/events";
 import { EventCard } from "@/components/EventCard";
+import { TAG_HIERARCHY, TagCategory, isOrphanTag } from "@/constants/tagHierarchy";
 
 type DateFilterType = "all" | "today" | "weekend" | "custom";
 
@@ -69,6 +70,7 @@ export default function EventsFeedScreen() {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<DateFilterType>("all");
   const [customRange, setCustomRange] = useState<DateRange>({ from: null, to: null });
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
@@ -173,6 +175,24 @@ export default function EventsFeedScreen() {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  }, []);
+
+  const toggleCategory = useCallback((cat: TagCategory) => {
+    setExpandedCategories((prev) =>
+      prev.includes(cat.key) ? prev.filter((k) => k !== cat.key) : [...prev, cat.key]
+    );
+  }, []);
+
+  const toggleCategoryAll = useCallback((cat: TagCategory, availableChildren: string[]) => {
+    setSelectedTags((prev) => {
+      const allSelected = availableChildren.every((t) => prev.includes(t));
+      if (allSelected) {
+        return prev.filter((t) => !availableChildren.includes(t));
+      } else {
+        const newTags = new Set([...prev, ...availableChildren]);
+        return [...newTags];
+      }
+    });
   }, []);
 
   const toggleCity = useCallback((city: string) => {
@@ -290,7 +310,34 @@ export default function EventsFeedScreen() {
     setDateFilter("all");
     setCustomRange({ from: null, to: null });
     setSearch("");
+    setExpandedCategories([]);
   }, []);
+
+  const categoryIcon = useCallback((iconName: string, color: string) => {
+    const size = 16;
+    switch (iconName) {
+      case "film": return <Film size={size} color={color} />;
+      case "music": return <Music size={size} color={color} />;
+      case "palette": return <Palette size={size} color={color} />;
+      case "mountain": return <Mountain size={size} color={color} />;
+      case "baby": return <Baby size={size} color={color} />;
+      case "laugh": return <Laugh size={size} color={color} />;
+      default: return null;
+    }
+  }, []);
+
+  const availableTagsSet = useMemo(() => new Set(tags), [tags]);
+
+  const categoriesWithAvailable = useMemo(() => {
+    return TAG_HIERARCHY.map((cat) => {
+      const available = cat.children.filter((t) => availableTagsSet.has(t));
+      return { ...cat, availableChildren: available };
+    }).filter((cat) => cat.availableChildren.length > 0);
+  }, [availableTagsSet]);
+
+  const orphanTags = useMemo(() => {
+    return tags.filter((t) => isOrphanTag(t) && t !== "utsolgt" && t !== "få billetter igjen");
+  }, [tags]);
 
   const monthNames = ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"];
   const dayLabels = ["Ma", "Ti", "On", "To", "Fr", "Lø", "Sø"];
@@ -387,36 +434,126 @@ export default function EventsFeedScreen() {
           )}
         </View>
 
-        {tags.length > 0 && (
-          <View style={styles.tagsWrap}>
-            {tags.map((tag, i) => {
-              const isSelected = selectedTags.includes(tag);
-              const colorSet = Colors.tagColors[i % Colors.tagColors.length];
+        {categoriesWithAvailable.length > 0 && (
+          <View style={styles.categoriesContainer}>
+            {categoriesWithAvailable.map((cat) => {
+              const isExpanded = expandedCategories.includes(cat.key);
+              const colorSet = Colors.categoryColors[cat.key] ?? Colors.categoryColors.annet;
+              const selectedChildCount = cat.availableChildren.filter((t) => selectedTags.includes(t)).length;
+              const allChildrenSelected = selectedChildCount === cat.availableChildren.length && selectedChildCount > 0;
+
               return (
-                <Pressable
-                  key={tag}
-                  onPress={() => toggleTag(tag)}
-                  style={[
-                    styles.tagPill,
-                    {
-                      backgroundColor: isSelected ? colorSet.text : colorSet.bg,
-                    },
-                  ]}
-                  testID={`tag-${tag}`}
-                >
-                  <Text
+                <View key={cat.key} style={styles.categoryBlock}>
+                  <Pressable
+                    onPress={() => {
+                      if (cat.availableChildren.length <= 1) {
+                        toggleCategoryAll(cat, cat.availableChildren);
+                      } else {
+                        toggleCategory(cat);
+                      }
+                    }}
                     style={[
-                      styles.tagPillText,
+                      styles.categoryHeader,
                       {
-                        color: isSelected ? Colors.white : colorSet.text,
+                        backgroundColor: allChildrenSelected ? colorSet.activeBg : (selectedChildCount > 0 ? colorSet.bg : Colors.white),
+                        borderColor: selectedChildCount > 0 ? colorSet.activeBg : Colors.cardBorder,
                       },
                     ]}
+                    testID={`category-${cat.key}`}
                   >
-                    {tag}
-                  </Text>
-                </Pressable>
+                    {categoryIcon(cat.icon, allChildrenSelected ? Colors.white : colorSet.text)}
+                    <Text
+                      style={[
+                        styles.categoryHeaderText,
+                        { color: allChildrenSelected ? Colors.white : colorSet.text },
+                      ]}
+                    >
+                      {cat.label}
+                    </Text>
+                    {selectedChildCount > 0 && !allChildrenSelected && (
+                      <View style={[styles.categoryBadge, { backgroundColor: colorSet.activeBg }]}>
+                        <Text style={styles.categoryBadgeText}>{selectedChildCount}</Text>
+                      </View>
+                    )}
+                    {cat.availableChildren.length > 1 && (
+                      <View style={styles.chevronWrap}>
+                        {isExpanded ? (
+                          <ChevronDown size={14} color={allChildrenSelected ? Colors.white : Colors.textMuted} />
+                        ) : (
+                          <ChevronRight size={14} color={allChildrenSelected ? Colors.white : Colors.textMuted} />
+                        )}
+                      </View>
+                    )}
+                  </Pressable>
+
+                  {isExpanded && cat.availableChildren.length > 1 && (
+                    <View style={styles.subTagsWrap}>
+                      <Pressable
+                        onPress={() => toggleCategoryAll(cat, cat.availableChildren)}
+                        style={[
+                          styles.subTagPill,
+                          {
+                            backgroundColor: allChildrenSelected ? colorSet.activeBg : colorSet.bg,
+                            borderColor: colorSet.activeBg,
+                            borderWidth: 1,
+                          },
+                        ]}
+                        testID={`tag-${cat.key}-all`}
+                      >
+                        <Text style={[styles.subTagText, { color: allChildrenSelected ? Colors.white : colorSet.text }]}>
+                          Alle
+                        </Text>
+                      </Pressable>
+                      {cat.availableChildren.map((tag) => {
+                        const isSelected = selectedTags.includes(tag);
+                        return (
+                          <Pressable
+                            key={tag}
+                            onPress={() => toggleTag(tag)}
+                            style={[
+                              styles.subTagPill,
+                              {
+                                backgroundColor: isSelected ? colorSet.activeBg : colorSet.bg,
+                              },
+                            ]}
+                            testID={`tag-${tag}`}
+                          >
+                            <Text style={[styles.subTagText, { color: isSelected ? Colors.white : colorSet.text }]}>
+                              {tag}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
               );
             })}
+
+            {orphanTags.length > 0 && (
+              <View style={styles.orphanTagsRow}>
+                {orphanTags.map((tag) => {
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <Pressable
+                      key={tag}
+                      onPress={() => toggleTag(tag)}
+                      style={[
+                        styles.subTagPill,
+                        {
+                          backgroundColor: isSelected ? Colors.categoryColors.annet.activeBg : Colors.categoryColors.annet.bg,
+                        },
+                      ]}
+                      testID={`tag-${tag}`}
+                    >
+                      <Text style={[styles.subTagText, { color: isSelected ? Colors.white : Colors.categoryColors.annet.text }]}>
+                        {tag}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
 
@@ -432,7 +569,7 @@ export default function EventsFeedScreen() {
         </View>
       </View>
     ),
-    [search, tags, selectedTags, cities, selectedCities, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, clearSearch, toggleTag, toggleCity, toggleFreeOnly, selectDateFilter, clearAllFilters]
+    [search, categoriesWithAvailable, orphanTags, selectedTags, expandedCategories, cities, selectedCities, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, clearSearch, toggleTag, toggleCategory, toggleCategoryAll, categoryIcon, toggleCity, toggleFreeOnly, selectDateFilter, clearAllFilters]
   );
 
   const renderEmpty = useMemo(() => {
@@ -731,6 +868,69 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cardBorder,
     alignItems: "center" as const,
     justifyContent: "center" as const,
+  },
+  categoriesContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    gap: 8,
+  },
+  categoryBlock: {
+    marginBottom: 2,
+  },
+  categoryHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  categoryHeaderText: {
+    fontSize: 14,
+    fontWeight: "700" as const,
+    flex: 1,
+  },
+  categoryBadge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    paddingHorizontal: 6,
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontWeight: "700" as const,
+    color: "#FFFFFF",
+  },
+  chevronWrap: {
+    width: 20,
+    alignItems: "center" as const,
+  },
+  subTagsWrap: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    paddingLeft: 12,
+    paddingTop: 6,
+    paddingBottom: 4,
+    gap: 6,
+  },
+  subTagPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  subTagText: {
+    fontSize: 12,
+    fontWeight: "600" as const,
+    textTransform: "capitalize" as const,
+  },
+  orphanTagsRow: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 6,
+    marginTop: 2,
   },
   tagsWrap: {
     flexDirection: "row" as const,

@@ -26,4 +26,12 @@ export default {
     { bg: "rgba(38, 70, 83, 0.12)", text: "#264653" },
     { bg: "rgba(233, 196, 106, 0.12)", text: "#B8941A" },
   ],
+  categoryColors: {
+    kino: { bg: "rgba(142, 68, 173, 0.12)", text: "#8E44AD", activeBg: "#8E44AD" },
+    konsert: { bg: "rgba(231, 76, 60, 0.12)", text: "#C0392B", activeBg: "#C0392B" },
+    kultur: { bg: "rgba(41, 128, 185, 0.12)", text: "#2980B9", activeBg: "#2980B9" },
+    sport: { bg: "rgba(39, 174, 96, 0.12)", text: "#27AE60", activeBg: "#27AE60" },
+    natur: { bg: "rgba(22, 160, 133, 0.12)", text: "#16A085", activeBg: "#16A085" },
+    annet: { bg: "rgba(149, 165, 166, 0.12)", text: "#7F8C8D", activeBg: "#7F8C8D" },
+  } as Record<string, { bg: string; text: string; activeBg: string }>,
 };
