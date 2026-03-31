@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "Kultur i Ålesund",
+      "path": "expo",
+      "framework": "react-native"
+    }
+  ]
+}
