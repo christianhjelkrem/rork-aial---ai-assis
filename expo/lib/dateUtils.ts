@@ -21,7 +21,8 @@ export function formatEventDate(dateStr: string | null): string {
   }
 }
 
-function isUtcMidnight(dateStr: string): boolean {
+function hasNoRealTime(dateStr: string): boolean {
+  if (dateStr.includes("T00:00:00")) return true;
   const d = new Date(dateStr);
   return d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
 }
@@ -32,12 +33,12 @@ export function formatEventTime(
 ): string | null {
   if (!startStr) return null;
   try {
-    if (isUtcMidnight(startStr)) return null;
+    if (hasNoRealTime(startStr)) return null;
 
     const start = new Date(startStr);
     const startTime = `${String(start.getUTCHours()).padStart(2, "0")}:${String(start.getUTCMinutes()).padStart(2, "0")}`;
 
-    if (endStr && !isUtcMidnight(endStr)) {
+    if (endStr && !hasNoRealTime(endStr)) {
       const end = new Date(endStr);
       const endTime = `${String(end.getUTCHours()).padStart(2, "0")}:${String(end.getUTCMinutes()).padStart(2, "0")}`;
       return `${startTime} – ${endTime}`;
