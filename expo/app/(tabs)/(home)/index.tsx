@@ -532,30 +532,34 @@ export default function EventsFeedScreen() {
               );
             })}
 
-            {orphanTags.length > 0 && (
-              <View style={styles.orphanTagsRow}>
-                {orphanTags.map((tag) => {
-                  const isSelected = selectedTags.includes(tag);
-                  return (
-                    <Pressable
-                      key={tag}
-                      onPress={() => toggleTag(tag)}
+            {orphanTags.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              const colorSet = Colors.categoryColors.annet;
+              return (
+                <View key={tag} style={styles.categoryBlock}>
+                  <Pressable
+                    onPress={() => toggleTag(tag)}
+                    style={[
+                      styles.categoryHeader,
+                      {
+                        backgroundColor: isSelected ? colorSet.activeBg : Colors.white,
+                        borderColor: isSelected ? colorSet.activeBg : Colors.cardBorder,
+                      },
+                    ]}
+                    testID={`tag-${tag}`}
+                  >
+                    <Text
                       style={[
-                        styles.subTagPill,
-                        {
-                          backgroundColor: isSelected ? Colors.categoryColors.annet.activeBg : Colors.categoryColors.annet.bg,
-                        },
+                        styles.categoryHeaderText,
+                        { color: isSelected ? Colors.white : colorSet.text },
                       ]}
-                      testID={`tag-${tag}`}
                     >
-                      <Text style={[styles.subTagText, { color: isSelected ? Colors.white : Colors.categoryColors.annet.text }]}>
-                        {tag}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+                      {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            })}
           </View>
         )}
 
