@@ -8,7 +8,7 @@ import {
   Pressable,
 } from "react-native";
 import { Heart, Globe, MapPin, Code } from "lucide-react-native";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const DATA_SOURCES = [
   "Friskus",
@@ -21,84 +21,85 @@ const DATA_SOURCES = [
 ];
 
 export default function AboutScreen() {
+  const { colors } = useTheme();
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
         <Text style={styles.heroEmoji}>🏔️</Text>
         <Text style={styles.heroTitle}>Hva skjer i Ålesund?</Text>
-        <Text style={styles.heroSubtitle}>
+        <Text style={[styles.heroSubtitle, { color: colors.accentLight }]}>
           Alt som skjer i Ålesund-regionen, samlet på ett sted.
         </Text>
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <View style={styles.sectionHeader}>
-          <Heart size={18} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Om appen</Text>
+          <Heart size={18} color={colors.accent} />
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>Om appen</Text>
         </View>
-        <Text style={styles.bodyText}>
+        <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
           Hva skjer i Ålesund? er et hobbyprosjekt som samler kulturarrangementer fra
           Ålesund, Ørskog, Sula og Giske i én enkel oversikt. Vi ønsker å gjøre
           det lettere å finne ut hva som skjer i regionen.
         </Text>
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <View style={styles.sectionHeader}>
-          <Globe size={18} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Datakilder</Text>
+          <Globe size={18} color={colors.accent} />
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>Datakilder</Text>
         </View>
-        <Text style={styles.bodyText}>
+        <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
           Arrangementene hentes automatisk fra flere kilder:
         </Text>
         <View style={styles.sourcesList}>
           {DATA_SOURCES.map((source) => (
             <View key={source} style={styles.sourceRow}>
-              <View style={styles.sourceDot} />
-              <Text style={styles.sourceText}>{source}</Text>
+              <View style={[styles.sourceDot, { backgroundColor: colors.accent }]} />
+              <Text style={[styles.sourceText, { color: colors.text }]}>{source}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <View style={styles.sectionHeader}>
-          <MapPin size={18} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Dekningsområde</Text>
+          <MapPin size={18} color={colors.accent} />
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>Dekningsområde</Text>
         </View>
         <View style={styles.citiesRow}>
           {["Ålesund", "Ørskog", "Sula", "Giske"].map((city) => (
-            <View key={city} style={styles.cityChip}>
-              <Text style={styles.cityChipText}>{city}</Text>
+            <View key={city} style={[styles.cityChip, { backgroundColor: colors.accentMuted }]}>
+              <Text style={[styles.cityChipText, { color: colors.accent }]}>{city}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
         <View style={styles.sectionHeader}>
-          <Code size={18} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Åpen kildekode</Text>
+          <Code size={18} color={colors.accent} />
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>Åpen kildekode</Text>
         </View>
-        <Text style={styles.bodyText}>
+        <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
           Kildekoden er tilgjengelig på GitHub. Bidrag og tilbakemeldinger er
           velkomne!
         </Text>
         <Pressable
-          style={styles.linkButton}
+          style={[styles.linkButton, { backgroundColor: colors.accentMuted }]}
           onPress={() =>
             Linking.openURL("https://github.com/larsohj/iaal")
           }
         >
-          <Text style={styles.linkButtonText}>Se på GitHub</Text>
+          <Text style={[styles.linkButtonText, { color: colors.accent }]}>Se på GitHub</Text>
         </Pressable>
       </View>
 
-      <Text style={styles.footerText}>
+      <Text style={[styles.footerText, { color: colors.textMuted }]}>
         Laget med ❤️ for Ålesund-regionen
       </Text>
     </ScrollView>
@@ -108,7 +109,6 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     padding: 20,
@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   heroCard: {
-    backgroundColor: Colors.primary,
     borderRadius: 20,
     padding: 28,
     alignItems: "center" as const,
@@ -128,22 +127,19 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 22,
     fontWeight: "800" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
     letterSpacing: -0.3,
   },
   heroSubtitle: {
     fontSize: 14,
-    color: Colors.accentLight,
     textAlign: "center" as const,
     lineHeight: 20,
   },
   section: {
-    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 18,
     gap: 12,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
   },
   sectionHeader: {
     flexDirection: "row" as const,
@@ -153,11 +149,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700" as const,
-    color: Colors.primary,
   },
   bodyText: {
     fontSize: 14,
-    color: Colors.textSecondary,
     lineHeight: 22,
   },
   sourcesList: {
@@ -172,11 +166,9 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.accent,
   },
   sourceText: {
     fontSize: 14,
-    color: Colors.text,
     fontWeight: "500" as const,
   },
   citiesRow: {
@@ -185,7 +177,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cityChip: {
-    backgroundColor: Colors.accentMuted,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -193,10 +184,8 @@ const styles = StyleSheet.create({
   cityChipText: {
     fontSize: 13,
     fontWeight: "600" as const,
-    color: Colors.accent,
   },
   linkButton: {
-    backgroundColor: Colors.accentMuted,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -205,11 +194,9 @@ const styles = StyleSheet.create({
   linkButtonText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.accent,
   },
   footerText: {
     fontSize: 13,
-    color: Colors.textMuted,
     textAlign: "center" as const,
     marginTop: 8,
   },

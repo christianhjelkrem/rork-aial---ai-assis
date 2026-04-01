@@ -10,7 +10,7 @@ import {
 import { Image } from "expo-image";
 import { Clock, Film, Music, Palette, Mountain, Baby, Laugh, Ticket, Calendar } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { EventData } from "@/types/event";
 import { formatEventTime, formatEventDate } from "@/lib/dateUtils";
 import { getParentCategory } from "@/constants/tagHierarchy";
@@ -56,6 +56,7 @@ interface EventCardCarouselProps {
 
 function EventCardCarouselComponent({ event }: EventCardCarouselProps) {
   const router = useRouter();
+  const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const onPressIn = useCallback(() => {
@@ -90,7 +91,7 @@ function EventCardCarouselComponent({ event }: EventCardCarouselProps) {
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.card }]}
         testID={`carousel-card-${event.source_id}`}
       >
         <View style={styles.imageContainer}>
@@ -102,7 +103,7 @@ function EventCardCarouselComponent({ event }: EventCardCarouselProps) {
               transition={200}
             />
           ) : (
-            <View style={[styles.placeholder, { backgroundColor: category?.color ?? Colors.primary }]}>
+            <View style={[styles.placeholder, { backgroundColor: category?.color ?? colors.primary }]}>
               <CategoryIcon
                 categoryKey={category?.key ?? "default"}
                 size={36}
@@ -112,7 +113,7 @@ function EventCardCarouselComponent({ event }: EventCardCarouselProps) {
           )}
 
           {event.is_free === true && (
-            <View style={styles.freeBadge}>
+            <View style={[styles.freeBadge, { backgroundColor: colors.free }]}>
               <Ticket size={9} color="#FFF" />
               <Text style={styles.freeBadgeText}>Gratis</Text>
             </View>
@@ -124,10 +125,10 @@ function EventCardCarouselComponent({ event }: EventCardCarouselProps) {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>{event.title}</Text>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>{event.title}</Text>
           <View style={styles.metaRow}>
-            <Clock size={11} color={Colors.accent} />
-            <Text style={styles.metaText} numberOfLines={1}>
+            <Clock size={11} color={colors.accent} />
+            <Text style={[styles.metaText, { color: colors.accent }]} numberOfLines={1}>
               {dateStr}{timeStr ? ` · ${timeStr}` : ""}
             </Text>
           </View>
@@ -144,7 +145,6 @@ const styles = StyleSheet.create({
     width: CAROUSEL_CARD_WIDTH,
   },
   card: {
-    backgroundColor: Colors.card,
     borderRadius: 16,
     overflow: "hidden" as const,
     shadowColor: "#000",
@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
     position: "absolute" as const,
     top: 8,
     right: 8,
-    backgroundColor: Colors.free,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 12,
@@ -200,7 +199,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: "700" as const,
-    color: Colors.text,
     lineHeight: 18,
     letterSpacing: -0.1,
   },
@@ -212,7 +210,6 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 11,
     fontWeight: "600" as const,
-    color: Colors.accent,
     flex: 1,
   },
 });

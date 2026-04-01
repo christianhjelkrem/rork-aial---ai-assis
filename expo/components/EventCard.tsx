@@ -9,7 +9,7 @@ import {
 import { Image } from "expo-image";
 import { MapPin, Clock, Film, Music, Palette, Mountain, Baby, Laugh, Ticket, Calendar } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { EventData } from "@/types/event";
 import { formatEventTime, getRelativeDateLabel, formatEventDate } from "@/lib/dateUtils";
 import { getParentCategory } from "@/constants/tagHierarchy";
@@ -52,6 +52,7 @@ function CategoryIcon({ categoryKey, size, color }: { categoryKey: string; size:
 
 function EventCardComponent({ event, compact: _compact }: EventCardProps) {
   const router = useRouter();
+  const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const onPressIn = useCallback(() => {
@@ -87,7 +88,7 @@ function EventCardComponent({ event, compact: _compact }: EventCardProps) {
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.card }]}
         testID={`event-card-${event.source_id}`}
       >
         <View style={styles.imageContainer}>
@@ -101,7 +102,7 @@ function EventCardComponent({ event, compact: _compact }: EventCardProps) {
           ) : (
             <View style={[
               styles.imagePlaceholder,
-              { backgroundColor: category?.color ?? Colors.primary },
+              { backgroundColor: category?.color ?? colors.primary },
             ]}>
               <View style={styles.placeholderPattern}>
                 <CategoryIcon
@@ -122,7 +123,7 @@ function EventCardComponent({ event, compact: _compact }: EventCardProps) {
           )}
 
           {event.is_free === true && (
-            <View style={styles.freeBadgeOverlay}>
+            <View style={[styles.freeBadgeOverlay, { backgroundColor: colors.free }]}>
               <Ticket size={10} color="#FFFFFF" />
               <Text style={styles.freeBadgeText}>Gratis</Text>
             </View>
@@ -136,14 +137,14 @@ function EventCardComponent({ event, compact: _compact }: EventCardProps) {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
             {event.title}
           </Text>
 
           <View style={styles.metaRow}>
             <View style={styles.dateTimeWrap}>
-              <Clock size={13} color={Colors.accent} />
-              <Text style={styles.dateText}>
+              <Clock size={13} color={colors.accent} />
+              <Text style={[styles.dateText, { color: colors.accent }]}>
                 {dateStr}{timeStr ? ` · ${timeStr}` : ""}
               </Text>
             </View>
@@ -151,8 +152,8 @@ function EventCardComponent({ event, compact: _compact }: EventCardProps) {
 
           {event.location_name && (
             <View style={styles.locationRow}>
-              <MapPin size={13} color={Colors.textSecondary} />
-              <Text style={styles.locationText} numberOfLines={1}>
+              <MapPin size={13} color={colors.textSecondary} />
+              <Text style={[styles.locationText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {event.location_name}
               </Text>
             </View>
@@ -171,7 +172,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    backgroundColor: Colors.card,
     borderRadius: 18,
     overflow: "hidden" as const,
     shadowColor: "#000",
@@ -224,7 +224,6 @@ const styles = StyleSheet.create({
     position: "absolute" as const,
     top: 12,
     right: 12,
-    backgroundColor: Colors.free,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
@@ -265,7 +264,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: "700" as const,
-    color: Colors.text,
     lineHeight: 22,
     letterSpacing: -0.2,
   },
@@ -283,7 +281,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 13,
     fontWeight: "600" as const,
-    color: Colors.accent,
     letterSpacing: 0.1,
   },
   locationRow: {
@@ -293,7 +290,6 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 13,
-    color: Colors.textSecondary,
     flex: 1,
   },
 });

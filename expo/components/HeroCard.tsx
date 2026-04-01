@@ -9,7 +9,7 @@ import {
 import { Image } from "expo-image";
 import { Clock, MapPin, ArrowRight, Film, Music, Palette, Mountain, Baby, Laugh, Calendar, Ticket } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { EventData } from "@/types/event";
 import { formatEventTime, formatEventDate } from "@/lib/dateUtils";
 import { getParentCategory } from "@/constants/tagHierarchy";
@@ -51,6 +51,7 @@ interface HeroCardProps {
 
 function HeroCardComponent({ event }: HeroCardProps) {
   const router = useRouter();
+  const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const onPressIn = useCallback(() => {
@@ -97,7 +98,7 @@ function HeroCardComponent({ event }: HeroCardProps) {
               transition={300}
             />
           ) : (
-            <View style={[styles.placeholder, { backgroundColor: category?.color ?? Colors.primary }]}>
+            <View style={[styles.placeholder, { backgroundColor: category?.color ?? colors.primary }]}>
               <CategoryIcon
                 categoryKey={category?.key ?? "default"}
                 size={64}
@@ -116,7 +117,7 @@ function HeroCardComponent({ event }: HeroCardProps) {
           )}
 
           {event.is_free === true && (
-            <View style={styles.freeBadge}>
+            <View style={[styles.freeBadge, { backgroundColor: colors.free }]}>
               <Ticket size={10} color="#FFF" />
               <Text style={styles.freeBadgeText}>Gratis</Text>
             </View>
@@ -213,7 +214,6 @@ const styles = StyleSheet.create({
     position: "absolute" as const,
     top: 14,
     right: 14,
-    backgroundColor: Colors.free,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,

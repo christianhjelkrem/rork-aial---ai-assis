@@ -24,7 +24,7 @@ import {
   Calendar,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { EventData } from "@/types/event";
 import { fetchEvents } from "@/lib/events";
 import { formatFullDate, formatEventTime } from "@/lib/dateUtils";
@@ -33,6 +33,7 @@ export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const buttonScale = useRef(new Animated.Value(1)).current;
 
   const eventsQuery = useQuery({
@@ -82,19 +83,19 @@ export default function EventDetailScreen() {
 
   if (eventsQuery.isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ headerShown: false }} />
-        <ActivityIndicator size="large" color={Colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   if (!event) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={styles.errorText}>Arrangementet ble ikke funnet</Text>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Arrangementet ble ikke funnet</Text>
+        <Pressable style={[styles.backButton, { backgroundColor: colors.accent }]} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Gå tilbake</Text>
         </Pressable>
       </View>
@@ -106,7 +107,7 @@ export default function EventDetailScreen() {
   const tags = event.tags ?? [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <ScrollView
@@ -125,8 +126,8 @@ export default function EventDetailScreen() {
             <View style={styles.heroOverlay} />
           </View>
         ) : (
-          <View style={styles.heroPlaceholder}>
-            <Tag size={40} color={Colors.accentLight} />
+          <View style={[styles.heroPlaceholder, { backgroundColor: colors.accentMuted }]}>
+            <Tag size={40} color={colors.accentLight} />
           </View>
         )}
 
@@ -135,78 +136,78 @@ export default function EventDetailScreen() {
           onPress={() => router.back()}
           hitSlop={12}
         >
-          <ArrowLeft size={22} color={Colors.white} />
+          <ArrowLeft size={22} color={colors.white} />
         </Pressable>
 
         <View style={styles.contentContainer}>
           <View style={styles.dateRow}>
-            <Text style={styles.dateLabel}>{dateStr}</Text>
+            <Text style={[styles.dateLabel, { color: colors.accent }]}>{dateStr}</Text>
             {event.is_free && (
-              <View style={styles.freeBadge}>
-                <Text style={styles.freeBadgeText}>Gratis</Text>
+              <View style={[styles.freeBadge, { backgroundColor: colors.freeLight }]}>
+                <Text style={[styles.freeBadgeText, { color: colors.free }]}>Gratis</Text>
               </View>
             )}
           </View>
 
-          <Text style={styles.title}>{event.title}</Text>
+          <Text style={[styles.title, { color: colors.primary }]}>{event.title}</Text>
 
-          <View style={styles.detailsSection}>
+          <View style={[styles.detailsSection, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             {timeStr && (
               <View style={styles.detailRow}>
-                <View style={styles.detailIcon}>
-                  <Clock size={18} color={Colors.accent} />
+                <View style={[styles.detailIcon, { backgroundColor: colors.accentMuted }]}>
+                  <Clock size={18} color={colors.accent} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Tidspunkt</Text>
-                  <Text style={styles.detailValue}>{timeStr}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textMuted }]}>Tidspunkt</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{timeStr}</Text>
                 </View>
               </View>
             )}
 
             {event.location_name && (
               <Pressable style={styles.detailRow} onPress={openMaps}>
-                <View style={styles.detailIcon}>
-                  <MapPin size={18} color={Colors.accent} />
+                <View style={[styles.detailIcon, { backgroundColor: colors.accentMuted }]}>
+                  <MapPin size={18} color={colors.accent} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Sted</Text>
-                  <Text style={styles.detailValue}>{event.location_name}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textMuted }]}>Sted</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{event.location_name}</Text>
                 </View>
               </Pressable>
             )}
 
             {event.organizer && (
               <View style={styles.detailRow}>
-                <View style={styles.detailIcon}>
-                  <User size={18} color={Colors.accent} />
+                <View style={[styles.detailIcon, { backgroundColor: colors.accentMuted }]}>
+                  <User size={18} color={colors.accent} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Arrangør</Text>
-                  <Text style={styles.detailValue}>{event.organizer}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textMuted }]}>Arrangør</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{event.organizer}</Text>
                 </View>
               </View>
             )}
 
             {event.price_text && (
               <View style={styles.detailRow}>
-                <View style={styles.detailIcon}>
-                  <Banknote size={18} color={Colors.accent} />
+                <View style={[styles.detailIcon, { backgroundColor: colors.accentMuted }]}>
+                  <Banknote size={18} color={colors.accent} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Pris</Text>
-                  <Text style={styles.detailValue}>{event.price_text}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textMuted }]}>Pris</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{event.price_text}</Text>
                 </View>
               </View>
             )}
 
             {event.start_at && (
               <View style={styles.detailRow}>
-                <View style={styles.detailIcon}>
-                  <Calendar size={18} color={Colors.accent} />
+                <View style={[styles.detailIcon, { backgroundColor: colors.accentMuted }]}>
+                  <Calendar size={18} color={colors.accent} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Dato</Text>
-                  <Text style={styles.detailValue}>{dateStr}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textMuted }]}>Dato</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{dateStr}</Text>
                 </View>
               </View>
             )}
@@ -215,7 +216,7 @@ export default function EventDetailScreen() {
           {tags.length > 0 && (
             <View style={styles.tagsSection}>
               {tags.map((tag, i) => {
-                const colorSet = Colors.tagColors[i % Colors.tagColors.length];
+                const colorSet = colors.tagColors[i % colors.tagColors.length];
                 return (
                   <View
                     key={tag}
@@ -232,13 +233,13 @@ export default function EventDetailScreen() {
 
           {event.description && (
             <View style={styles.descriptionSection}>
-              <Text style={styles.sectionTitle}>Om arrangementet</Text>
-              <Text style={styles.description}>{event.description}</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary }]}>Om arrangementet</Text>
+              <Text style={[styles.description, { color: colors.textSecondary }]}>{event.description}</Text>
             </View>
           )}
 
           {event.source && (
-            <Text style={styles.sourceText}>Kilde: {event.source}</Text>
+            <Text style={[styles.sourceText, { color: colors.textMuted }]}>Kilde: {event.source}</Text>
           )}
         </View>
 
@@ -246,16 +247,16 @@ export default function EventDetailScreen() {
       </ScrollView>
 
       {event.url && (
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
+        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.card, borderTopColor: colors.cardBorder }]}>
           <Animated.View style={{ transform: [{ scale: buttonScale }], flex: 1 }}>
             <Pressable
-              style={styles.linkButton}
+              style={[styles.linkButton, { backgroundColor: colors.accent }]}
               onPress={openLink}
               onPressIn={onButtonPressIn}
               onPressOut={onButtonPressOut}
               testID="open-link-button"
             >
-              <ExternalLink size={18} color={Colors.white} />
+              <ExternalLink size={18} color={colors.white} />
               <Text style={styles.linkButtonText}>Åpne arrangement</Text>
             </Pressable>
           </Animated.View>
@@ -268,7 +269,6 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   scrollView: {
     flex: 1,
@@ -277,15 +277,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center" as const,
     justifyContent: "center" as const,
-    backgroundColor: Colors.background,
     gap: 16,
   },
   errorText: {
     fontSize: 16,
-    color: Colors.textSecondary,
   },
   backButton: {
-    backgroundColor: Colors.accent,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
@@ -293,7 +290,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
   },
   heroContainer: {
     width: "100%" as const,
@@ -311,7 +308,6 @@ const styles = StyleSheet.create({
   heroPlaceholder: {
     width: "100%" as const,
     height: 180,
-    backgroundColor: Colors.accentMuted,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
@@ -338,12 +334,10 @@ const styles = StyleSheet.create({
   dateLabel: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.accent,
     textTransform: "uppercase" as const,
     letterSpacing: 0.5,
   },
   freeBadge: {
-    backgroundColor: Colors.freeLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -351,22 +345,18 @@ const styles = StyleSheet.create({
   freeBadgeText: {
     fontSize: 12,
     fontWeight: "700" as const,
-    color: Colors.free,
   },
   title: {
     fontSize: 24,
     fontWeight: "800" as const,
-    color: Colors.primary,
     lineHeight: 30,
     letterSpacing: -0.3,
   },
   detailsSection: {
-    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 16,
     gap: 14,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
   },
   detailRow: {
     flexDirection: "row" as const,
@@ -377,7 +367,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: Colors.accentMuted,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
@@ -387,17 +376,11 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
-    color: Colors.textMuted,
     fontWeight: "500" as const,
   },
   detailValue: {
     fontSize: 15,
-    color: Colors.text,
     fontWeight: "600" as const,
-  },
-  detailSubvalue: {
-    fontSize: 13,
-    color: Colors.textSecondary,
   },
   tagsSection: {
     flexDirection: "row" as const,
@@ -419,16 +402,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700" as const,
-    color: Colors.primary,
   },
   description: {
     fontSize: 15,
-    color: Colors.textSecondary,
     lineHeight: 24,
   },
   sourceText: {
     fontSize: 12,
-    color: Colors.textMuted,
     fontStyle: "italic" as const,
   },
   bottomBar: {
@@ -436,19 +416,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.white,
     paddingHorizontal: 20,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.cardBorder,
-    shadowColor: Colors.primary,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 8,
   },
   linkButton: {
-    backgroundColor: Colors.accent,
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "center" as const,
@@ -459,6 +436,6 @@ const styles = StyleSheet.create({
   linkButtonText: {
     fontSize: 16,
     fontWeight: "700" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
   },
 });

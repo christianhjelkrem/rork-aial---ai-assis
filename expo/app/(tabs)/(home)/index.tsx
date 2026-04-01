@@ -32,7 +32,7 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react-native";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { EventData } from "@/types/event";
 import { fetchEvents, fetchAllTags } from "@/lib/events";
 import { EventCard } from "@/components/EventCard";
@@ -110,6 +110,7 @@ function TabIcon({ icon, size, color }: { icon: string; size: number; color: str
 
 export default function EventsFeedScreen() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [search, setSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedSubTags, setSelectedSubTags] = useState<string[]>([]);
@@ -424,11 +425,11 @@ export default function EventsFeedScreen() {
     ({ item }: { item: ListItem }) => {
       if (item.type === "section-header") {
         return (
-          <View style={styles.sectionHeaderContainer}>
-            <View style={styles.sectionHeaderAccent} />
+          <View style={[styles.sectionHeaderContainer, { backgroundColor: colors.background, borderTopColor: colors.cardBorder }]}>
+            <View style={[styles.sectionHeaderAccent, { backgroundColor: colors.accent }]} />
             <View style={styles.sectionHeaderContent}>
-              <Text style={styles.sectionHeaderText}>{item.title}</Text>
-              <Text style={styles.sectionHeaderCount}>
+              <Text style={[styles.sectionHeaderText, { color: colors.primary }]}>{item.title}</Text>
+              <Text style={[styles.sectionHeaderCount, { color: colors.textMuted }]}>
                 {item.count} {item.count === 1 ? "arrangement" : "arrangementer"}
               </Text>
             </View>
@@ -437,7 +438,7 @@ export default function EventsFeedScreen() {
       }
       return <EventCard event={item.event} />;
     },
-    []
+    [colors]
   );
 
   const keyExtractor = useCallback((item: ListItem) => item.key, []);
@@ -474,19 +475,19 @@ export default function EventsFeedScreen() {
     () => (
       <View>
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Search size={18} color={Colors.textMuted} />
+          <View style={[styles.searchBar, { backgroundColor: colors.searchBar, borderColor: colors.cardBorder }]}>
+            <Search size={18} color={colors.textMuted} />
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder="Søk etter arrangementer..."
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={colors.textMuted}
               value={search}
               onChangeText={setSearch}
               testID="search-input"
             />
             {search.length > 0 && (
               <Pressable onPress={clearSearch} hitSlop={8}>
-                <X size={18} color={Colors.textSecondary} />
+                <X size={18} color={colors.textSecondary} />
               </Pressable>
             )}
           </View>
@@ -501,8 +502,8 @@ export default function EventsFeedScreen() {
           {categoryTabs.map((tab) => {
             const isActive = selectedCategory === tab.key;
             const colorSet = tab.key === "all"
-              ? { bg: Colors.accentMuted, text: Colors.accent, activeBg: Colors.accent }
-              : (Colors.categoryColors[tab.key] ?? Colors.categoryColors.annet);
+              ? { bg: colors.accentMuted, text: colors.accent, activeBg: colors.accent }
+              : (colors.categoryColors[tab.key] ?? colors.categoryColors.annet);
             return (
               <Pressable
                 key={tab.key}
@@ -510,8 +511,8 @@ export default function EventsFeedScreen() {
                 style={[
                   styles.categoryTab,
                   {
-                    backgroundColor: isActive ? colorSet.activeBg : Colors.white,
-                    borderColor: isActive ? colorSet.activeBg : Colors.cardBorder,
+                    backgroundColor: isActive ? colorSet.activeBg : colors.chipBg,
+                    borderColor: isActive ? colorSet.activeBg : colors.cardBorder,
                   },
                 ]}
                 testID={`tab-${tab.key}`}
@@ -519,12 +520,12 @@ export default function EventsFeedScreen() {
                 <TabIcon
                   icon={tab.icon}
                   size={15}
-                  color={isActive ? Colors.white : colorSet.text}
+                  color={isActive ? colors.white : colorSet.text}
                 />
                 <Text
                   style={[
                     styles.categoryTabText,
-                    { color: isActive ? Colors.white : colorSet.text },
+                    { color: isActive ? colors.white : colorSet.text },
                   ]}
                 >
                   {tab.label}
@@ -543,7 +544,7 @@ export default function EventsFeedScreen() {
           >
             {availableSubTags.map((tag) => {
               const isSelected = selectedSubTags.includes(tag);
-              const colorSet = Colors.categoryColors[selectedCategory] ?? Colors.categoryColors.annet;
+              const colorSet = colors.categoryColors[selectedCategory] ?? colors.categoryColors.annet;
               return (
                 <Pressable
                   key={tag}
@@ -560,7 +561,7 @@ export default function EventsFeedScreen() {
                   <Text
                     style={[
                       styles.subTagChipText,
-                      { color: isSelected ? Colors.white : colorSet.text },
+                      { color: isSelected ? colors.white : colorSet.text },
                     ]}
                   >
                     {tag.charAt(0).toUpperCase() + tag.slice(1)}
@@ -574,40 +575,40 @@ export default function EventsFeedScreen() {
         <View style={styles.quickFiltersRow}>
           <Pressable
             onPress={() => selectDateFilter("today")}
-            style={[styles.quickChip, dateFilter === "today" && styles.quickChipDateActive]}
+            style={[styles.quickChip, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, dateFilter === "today" && { backgroundColor: colors.primary, borderColor: colors.primary }]}
             testID="filter-today"
           >
-            <Text style={[styles.quickChipText, { color: dateFilter === "today" ? Colors.white : Colors.primary }]}>I dag</Text>
+            <Text style={[styles.quickChipText, { color: dateFilter === "today" ? colors.white : colors.primary }]}>I dag</Text>
           </Pressable>
           <Pressable
             onPress={() => selectDateFilter("weekend")}
-            style={[styles.quickChip, dateFilter === "weekend" && styles.quickChipDateActive]}
+            style={[styles.quickChip, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, dateFilter === "weekend" && { backgroundColor: colors.primary, borderColor: colors.primary }]}
             testID="filter-weekend"
           >
-            <Text style={[styles.quickChipText, { color: dateFilter === "weekend" ? Colors.white : Colors.primary }]}>I helgen</Text>
+            <Text style={[styles.quickChipText, { color: dateFilter === "weekend" ? colors.white : colors.primary }]}>I helgen</Text>
           </Pressable>
           <Pressable
             onPress={toggleFreeOnly}
-            style={[styles.quickChip, showFreeOnly && styles.quickChipFreeActive]}
+            style={[styles.quickChip, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, showFreeOnly && { backgroundColor: colors.free, borderColor: colors.free }]}
             testID="filter-free"
           >
-            <Ticket size={13} color={showFreeOnly ? Colors.white : Colors.free} />
-            <Text style={[styles.quickChipText, { color: showFreeOnly ? Colors.white : Colors.free }]}>Gratis</Text>
+            <Ticket size={13} color={showFreeOnly ? colors.white : colors.free} />
+            <Text style={[styles.quickChipText, { color: showFreeOnly ? colors.white : colors.free }]}>Gratis</Text>
           </Pressable>
 
           {dateFilter === "custom" && dateFilterLabel && (
-            <View style={[styles.quickChip, styles.quickChipDateActive]}>
-              <Calendar size={12} color={Colors.white} />
-              <Text style={[styles.quickChipText, { color: Colors.white }]}>{dateFilterLabel}</Text>
+            <View style={[styles.quickChip, { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+              <Calendar size={12} color={colors.white} />
+              <Text style={[styles.quickChipText, { color: colors.white }]}>{dateFilterLabel}</Text>
               <Pressable onPress={() => { setDateFilter("all"); setCustomRange({ from: null, to: null }); }} hitSlop={8}>
-                <X size={12} color={Colors.white} />
+                <X size={12} color={colors.white} />
               </Pressable>
             </View>
           )}
 
           {dateFilter !== "all" && dateFilter !== "custom" && (
-            <Pressable onPress={() => setDateFilter("all")} style={styles.clearChipBtn} hitSlop={6}>
-              <X size={13} color={Colors.textSecondary} />
+            <Pressable onPress={() => setDateFilter("all")} style={[styles.clearChipBtn, { backgroundColor: colors.cardBorder }]} hitSlop={6}>
+              <X size={13} color={colors.textSecondary} />
             </Pressable>
           )}
 
@@ -615,12 +616,12 @@ export default function EventsFeedScreen() {
 
           <Pressable
             onPress={() => setShowFilterSheet(true)}
-            style={[styles.filterBtn, advancedFilterCount > 0 && styles.filterBtnActive]}
+            style={[styles.filterBtn, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, advancedFilterCount > 0 && { backgroundColor: colors.primary, borderColor: colors.primary }]}
             testID="filter-advanced"
           >
-            <SlidersHorizontal size={16} color={advancedFilterCount > 0 ? Colors.white : Colors.primary} />
+            <SlidersHorizontal size={16} color={advancedFilterCount > 0 ? colors.white : colors.primary} />
             {advancedFilterCount > 0 && (
-              <View style={styles.filterBtnBadge}>
+              <View style={[styles.filterBtnBadge, { backgroundColor: colors.accent }]}>
                 <Text style={styles.filterBtnBadgeText}>{advancedFilterCount}</Text>
               </View>
             )}
@@ -631,10 +632,10 @@ export default function EventsFeedScreen() {
           <View style={styles.carouselSection}>
             <View style={styles.carouselHeader}>
               <View style={styles.carouselTitleRow}>
-                <View style={styles.carouselDot} />
-                <Text style={styles.carouselTitle}>I dag</Text>
+                <View style={[styles.carouselDot, { backgroundColor: colors.accent }]} />
+                <Text style={[styles.carouselTitle, { color: colors.primary }]}>I dag</Text>
               </View>
-              <Text style={styles.carouselCount}>{tonightEvents.length}</Text>
+              <Text style={[styles.carouselCount, { color: colors.textMuted }]}>{tonightEvents.length}</Text>
             </View>
             <FlatList
               data={tonightEvents}
@@ -654,10 +655,10 @@ export default function EventsFeedScreen() {
           <View style={styles.carouselSection}>
             <View style={styles.carouselHeader}>
               <View style={styles.carouselTitleRow}>
-                <View style={[styles.carouselDot, { backgroundColor: Colors.primaryLight }]} />
-                <Text style={styles.carouselTitle}>I helgen</Text>
+                <View style={[styles.carouselDot, { backgroundColor: colors.primaryLight }]} />
+                <Text style={[styles.carouselTitle, { color: colors.primary }]}>I helgen</Text>
               </View>
-              <Text style={styles.carouselCount}>{weekendEvents.length}</Text>
+              <Text style={[styles.carouselCount, { color: colors.textMuted }]}>{weekendEvents.length}</Text>
             </View>
             <FlatList
               data={weekendEvents}
@@ -675,20 +676,20 @@ export default function EventsFeedScreen() {
 
         <View style={styles.resultRow}>
           <View style={styles.resultRowLeft}>
-            <View style={styles.resultAccent} />
-            <Text style={styles.resultCountText}>
+            <View style={[styles.resultAccent, { backgroundColor: colors.accent }]} />
+            <Text style={[styles.resultCountText, { color: colors.primary }]}>
               {hasActiveFilters ? `${filteredEvents.length} ${filteredEvents.length === 1 ? "treff" : "treff"}` : "Alle arrangementer"}
             </Text>
           </View>
           {activeFiltersCount > 0 && (
             <Pressable onPress={clearAllFilters} hitSlop={6}>
-              <Text style={styles.clearAllText}>Nullstill filtre</Text>
+              <Text style={[styles.clearAllText, { color: colors.accent }]}>Nullstill filtre</Text>
             </Pressable>
           )}
         </View>
       </View>
     ),
-    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, hasActiveFilters, tonightEvents, weekendEvents, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters]
+    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, hasActiveFilters, tonightEvents, weekendEvents, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters, colors]
   );
 
   const renderEmpty = useMemo(() => {
@@ -696,11 +697,11 @@ export default function EventsFeedScreen() {
       return (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>!!!</Text>
-          <Text style={styles.emptyTitle}>Kunne ikke laste data</Text>
-          <Text style={styles.emptyText}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Kunne ikke laste data</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             {eventsQuery.error?.message ?? "Ukjent feil"}
           </Text>
-          <Pressable style={styles.retryButton} onPress={onRefresh}>
+          <Pressable style={[styles.retryButton, { backgroundColor: colors.accent }]} onPress={onRefresh}>
             <Text style={styles.retryButtonText}>Prøv igjen</Text>
           </Pressable>
         </View>
@@ -709,22 +710,22 @@ export default function EventsFeedScreen() {
 
     return (
       <View style={styles.emptyContainer}>
-        <CalendarDays size={48} color={Colors.textMuted} />
-        <Text style={styles.emptyTitle}>Ingen treff</Text>
-        <Text style={styles.emptyText}>
+        <CalendarDays size={48} color={colors.textMuted} />
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>Ingen treff</Text>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
           {search || selectedCategory !== "all" || dateFilter !== "all"
             ? "Prøv å endre søket eller filteret ditt"
             : "Det er ingen kommende arrangementer akkurat nå"}
         </Text>
       </View>
     );
-  }, [eventsQuery.isError, eventsQuery.error, search, selectedCategory, dateFilter, onRefresh]);
+  }, [eventsQuery.isError, eventsQuery.error, search, selectedCategory, dateFilter, onRefresh, colors]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
-        <Text style={styles.headerTitle}>Ålesund - Hva skjer?</Text>
-        <Text style={styles.headerSubtitle}>{todayLabel}</Text>
+        <Text style={[styles.headerTitle, { color: colors.primary }]}>Ålesund - Hva skjer?</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>{todayLabel}</Text>
       </Animated.View>
 
       {eventsQuery.isLoading ? (
@@ -744,8 +745,8 @@ export default function EventsFeedScreen() {
           <RefreshControl
             refreshing={eventsQuery.isFetching && !eventsQuery.isLoading}
             onRefresh={onRefresh}
-            tintColor={Colors.accent}
-            colors={[Colors.accent]}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
           />
         }
         onScroll={Animated.event(
@@ -762,14 +763,14 @@ export default function EventsFeedScreen() {
         animationType="slide"
         onRequestClose={() => setShowFilterSheet(false)}
       >
-        <Pressable style={styles.sheetOverlay} onPress={() => setShowFilterSheet(false)}>
+        <Pressable style={[styles.sheetOverlay, { backgroundColor: colors.overlay }]} onPress={() => setShowFilterSheet(false)}>
           <View />
         </Pressable>
-        <View style={[styles.sheetContainer, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.sheetHandle} />
-          <Text style={styles.sheetTitle}>Filtre</Text>
+        <View style={[styles.sheetContainer, { paddingBottom: insets.bottom + 16, backgroundColor: colors.sheetBg }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: colors.cardBorder }]} />
+          <Text style={[styles.sheetTitle, { color: colors.primary }]}>Filtre</Text>
 
-          <Text style={styles.sheetSectionLabel}>Område</Text>
+          <Text style={[styles.sheetSectionLabel, { color: colors.textSecondary }]}>Område</Text>
           <View style={styles.sheetChipsRow}>
             {availableAreas.map((area) => {
               const isSelected = selectedAreas.includes(area.key);
@@ -777,36 +778,36 @@ export default function EventsFeedScreen() {
                 <Pressable
                   key={area.key}
                   onPress={() => toggleArea(area.key)}
-                  style={[styles.sheetChip, isSelected && styles.sheetChipActive]}
+                  style={[styles.sheetChip, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, isSelected && { backgroundColor: colors.primaryLight, borderColor: colors.primaryLight }]}
                   testID={`filter-area-${area.key}`}
                 >
-                  <MapPin size={14} color={isSelected ? Colors.white : Colors.primaryLight} />
-                  <Text style={[styles.sheetChipText, isSelected && styles.sheetChipTextActive]}>{area.label}</Text>
+                  <MapPin size={14} color={isSelected ? colors.white : colors.primaryLight} />
+                  <Text style={[styles.sheetChipText, { color: colors.primary }, isSelected && { color: colors.white }]}>{area.label}</Text>
                 </Pressable>
               );
             })}
           </View>
 
-          <Text style={styles.sheetSectionLabel}>Dato</Text>
+          <Text style={[styles.sheetSectionLabel, { color: colors.textSecondary }]}>Dato</Text>
           <View style={styles.sheetChipsRow}>
             <Pressable
               onPress={() => selectDateFilter("custom")}
-              style={[styles.sheetChip, dateFilter === "custom" && styles.sheetChipActive]}
+              style={[styles.sheetChip, { backgroundColor: colors.chipBg, borderColor: colors.cardBorder }, dateFilter === "custom" && { backgroundColor: colors.primaryLight, borderColor: colors.primaryLight }]}
               testID="filter-custom-date"
             >
-              <Calendar size={14} color={dateFilter === "custom" ? Colors.white : Colors.primary} />
-              <Text style={[styles.sheetChipText, dateFilter === "custom" && styles.sheetChipTextActive]}>
+              <Calendar size={14} color={dateFilter === "custom" ? colors.white : colors.primary} />
+              <Text style={[styles.sheetChipText, { color: colors.primary }, dateFilter === "custom" && { color: colors.white }]}>
                 {dateFilterLabel ?? "Velg datoperiode"}
               </Text>
-              <ChevronDown size={12} color={dateFilter === "custom" ? Colors.white : Colors.textMuted} />
+              <ChevronDown size={12} color={dateFilter === "custom" ? colors.white : colors.textMuted} />
             </Pressable>
             {dateFilter === "custom" && (
               <Pressable
                 onPress={() => { setDateFilter("all"); setCustomRange({ from: null, to: null }); }}
-                style={styles.clearChipBtn}
+                style={[styles.clearChipBtn, { backgroundColor: colors.cardBorder }]}
                 hitSlop={6}
               >
-                <X size={14} color={Colors.textSecondary} />
+                <X size={14} color={colors.textSecondary} />
               </Pressable>
             )}
           </View>
@@ -820,15 +821,15 @@ export default function EventsFeedScreen() {
                   setCustomRange({ from: null, to: null });
                 }
               }}
-              style={styles.sheetSecondaryBtn}
+              style={[styles.sheetSecondaryBtn, { backgroundColor: colors.background }]}
             >
-              <Text style={styles.sheetSecondaryBtnText}>Nullstill</Text>
+              <Text style={[styles.sheetSecondaryBtnText, { color: colors.textSecondary }]}>Nullstill</Text>
             </Pressable>
             <Pressable
               onPress={() => setShowFilterSheet(false)}
-              style={styles.sheetPrimaryBtn}
+              style={[styles.sheetPrimaryBtn, { backgroundColor: colors.accent }]}
             >
-              <Check size={16} color={Colors.white} />
+              <Check size={16} color={colors.white} />
               <Text style={styles.sheetPrimaryBtnText}>Vis resultater</Text>
             </Pressable>
           </View>
@@ -841,45 +842,45 @@ export default function EventsFeedScreen() {
         animationType="fade"
         onRequestClose={() => setShowDatePicker(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowDatePicker(false)}>
-          <Pressable style={[styles.modalContent, Platform.OS === "web" && { maxWidth: 400 }]} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Velg datoperiode</Text>
+        <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setShowDatePicker(false)}>
+          <Pressable style={[styles.modalContent, { backgroundColor: colors.modalBg }, Platform.OS === "web" && { maxWidth: 400 }]} onPress={() => {}}>
+            <Text style={[styles.modalTitle, { color: colors.primary }]}>Velg datoperiode</Text>
 
             <View style={styles.rangeDisplay}>
               <Pressable
-                style={[styles.rangeField, pickingField === "from" && styles.rangeFieldActive]}
+                style={[styles.rangeField, { backgroundColor: colors.background, borderColor: "transparent" }, pickingField === "from" && { borderColor: colors.accent }]}
                 onPress={() => setPickingField("from")}
               >
-                <Text style={styles.rangeLabel}>Fra</Text>
-                <Text style={[styles.rangeValue, !tempRange.from && styles.rangePlaceholder]}>
+                <Text style={[styles.rangeLabel, { color: colors.textMuted }]}>Fra</Text>
+                <Text style={[styles.rangeValue, { color: colors.primary }, !tempRange.from && { color: colors.textMuted }]}>
                   {tempRange.from ? formatShortDate(tempRange.from) : "Velg dato"}
                 </Text>
               </Pressable>
-              <View style={styles.rangeDivider} />
+              <View style={[styles.rangeDivider, { backgroundColor: colors.textMuted }]} />
               <Pressable
-                style={[styles.rangeField, pickingField === "to" && styles.rangeFieldActive]}
+                style={[styles.rangeField, { backgroundColor: colors.background, borderColor: "transparent" }, pickingField === "to" && { borderColor: colors.accent }]}
                 onPress={() => setPickingField("to")}
               >
-                <Text style={styles.rangeLabel}>Til</Text>
-                <Text style={[styles.rangeValue, !tempRange.to && styles.rangePlaceholder]}>
+                <Text style={[styles.rangeLabel, { color: colors.textMuted }]}>Til</Text>
+                <Text style={[styles.rangeValue, { color: colors.primary }, !tempRange.to && { color: colors.textMuted }]}>
                   {tempRange.to ? formatShortDate(tempRange.to) : "Velg dato"}
                 </Text>
               </Pressable>
             </View>
 
             <View style={styles.calendarNav}>
-              <Pressable onPress={goPrevMonth} style={styles.calNavBtn}>
-                <Text style={styles.calNavText}>‹</Text>
+              <Pressable onPress={goPrevMonth} style={[styles.calNavBtn, { backgroundColor: colors.background }]}>
+                <Text style={[styles.calNavText, { color: colors.primary }]}>‹</Text>
               </Pressable>
-              <Text style={styles.calMonthLabel}>{monthNames[pickerMonth]} {pickerYear}</Text>
-              <Pressable onPress={goNextMonth} style={styles.calNavBtn}>
-                <Text style={styles.calNavText}>›</Text>
+              <Text style={[styles.calMonthLabel, { color: colors.primary }]}>{monthNames[pickerMonth]} {pickerYear}</Text>
+              <Pressable onPress={goNextMonth} style={[styles.calNavBtn, { backgroundColor: colors.background }]}>
+                <Text style={[styles.calNavText, { color: colors.primary }]}>›</Text>
               </Pressable>
             </View>
 
             <View style={styles.calDayLabels}>
               {dayLabels.map((l) => (
-                <Text key={l} style={styles.calDayLabel}>{l}</Text>
+                <Text key={l} style={[styles.calDayLabel, { color: colors.textMuted }]}>{l}</Text>
               ))}
             </View>
 
@@ -900,17 +901,18 @@ export default function EventsFeedScreen() {
                     key={`day-${day}`}
                     style={[
                       styles.calCell,
-                      inBetween && styles.calCellInRange,
-                      isEdge && styles.calCellSelected,
+                      inBetween && { backgroundColor: colors.accentMuted },
+                      isEdge && { backgroundColor: colors.accent, borderRadius: 20 },
                     ]}
                     onPress={() => handleDayPress(day)}
                   >
                     <Text
                       style={[
                         styles.calDayText,
-                        isToday && !isEdge && styles.calDayToday,
-                        isEdge && styles.calDayTextSelected,
-                        inBetween && styles.calDayTextInRange,
+                        { color: colors.text },
+                        isToday && !isEdge && { color: colors.accent, fontWeight: "700" as const },
+                        isEdge && { color: colors.white, fontWeight: "700" as const },
+                        inBetween && { color: colors.primary, fontWeight: "600" as const },
                       ]}
                     >
                       {day}
@@ -921,15 +923,15 @@ export default function EventsFeedScreen() {
             </View>
 
             <View style={styles.modalActions}>
-              <Pressable onPress={clearDateRange} style={styles.modalSecondaryBtn}>
-                <Text style={styles.modalSecondaryBtnText}>Nullstill</Text>
+              <Pressable onPress={clearDateRange} style={[styles.modalSecondaryBtn, { backgroundColor: colors.background }]}>
+                <Text style={[styles.modalSecondaryBtnText, { color: colors.textSecondary }]}>Nullstill</Text>
               </Pressable>
               <Pressable
                 onPress={confirmDateRange}
-                style={[styles.modalPrimaryBtn, (!tempRange.from || !tempRange.to) && styles.modalPrimaryBtnDisabled]}
+                style={[styles.modalPrimaryBtn, { backgroundColor: colors.accent }, (!tempRange.from || !tempRange.to) && styles.modalPrimaryBtnDisabled]}
                 disabled={!tempRange.from || !tempRange.to}
               >
-                <Check size={16} color={Colors.white} />
+                <Check size={16} color={colors.white} />
                 <Text style={styles.modalPrimaryBtnText}>Bruk</Text>
               </Pressable>
             </View>
@@ -943,7 +945,6 @@ export default function EventsFeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     paddingHorizontal: 20,
@@ -953,12 +954,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "800" as const,
-    color: Colors.primary,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
     marginTop: 2,
   },
   searchContainer: {
@@ -969,14 +968,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    backgroundColor: Colors.white,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 10,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    shadowColor: Colors.primary,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -985,7 +982,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: Colors.text,
     padding: 0,
   },
   categoryTabsScroll: {
@@ -1039,30 +1035,19 @@ const styles = StyleSheet.create({
     flexDirection: "row" as const,
     alignItems: "center" as const,
     gap: 5,
-    backgroundColor: Colors.white,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
   },
   quickChipText: {
     fontSize: 13,
     fontWeight: "600" as const,
   },
-  quickChipDateActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  quickChipFreeActive: {
-    backgroundColor: Colors.free,
-    borderColor: Colors.free,
-  },
   clearChipBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: Colors.cardBorder,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
@@ -1070,15 +1055,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 14,
-    backgroundColor: Colors.white,
     alignItems: "center" as const,
     justifyContent: "center" as const,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
-  },
-  filterBtnActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
   },
   filterBtnBadge: {
     position: "absolute" as const,
@@ -1087,7 +1066,6 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: Colors.accent,
     alignItems: "center" as const,
     justifyContent: "center" as const,
     paddingHorizontal: 4,
@@ -1095,12 +1073,7 @@ const styles = StyleSheet.create({
   filterBtnBadgeText: {
     fontSize: 10,
     fontWeight: "800" as const,
-    color: Colors.white,
-  },
-  heroSection: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
+    color: "#FFFFFF",
   },
   carouselSection: {
     paddingTop: 16,
@@ -1122,18 +1095,15 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.accent,
   },
   carouselTitle: {
     fontSize: 17,
     fontWeight: "800" as const,
-    color: Colors.primary,
     letterSpacing: -0.2,
   },
   carouselCount: {
     fontSize: 13,
     fontWeight: "600" as const,
-    color: Colors.textMuted,
   },
   carouselContent: {
     paddingHorizontal: 16,
@@ -1155,16 +1125,13 @@ const styles = StyleSheet.create({
     width: 3,
     height: 16,
     borderRadius: 2,
-    backgroundColor: Colors.accent,
   },
   resultCountText: {
     fontSize: 15,
-    color: Colors.primary,
     fontWeight: "700" as const,
   },
   clearAllText: {
     fontSize: 13,
-    color: Colors.accent,
     fontWeight: "600" as const,
   },
   listContent: {
@@ -1177,16 +1144,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
     paddingBottom: 10,
-    backgroundColor: Colors.background,
     gap: 0,
     borderTopWidth: 1,
-    borderTopColor: Colors.cardBorder,
     marginTop: 4,
   },
   sectionHeaderAccent: {
     width: 4,
     height: 36,
-    backgroundColor: Colors.accent,
     borderRadius: 2,
     marginRight: 12,
   },
@@ -1196,13 +1160,11 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     fontSize: 18,
     fontWeight: "800" as const,
-    color: Colors.primary,
     letterSpacing: -0.3,
   },
   sectionHeaderCount: {
     fontSize: 12,
     fontWeight: "500" as const,
-    color: Colors.textMuted,
     marginTop: 2,
   },
   emptyContainer: {
@@ -1219,17 +1181,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: "700" as const,
-    color: Colors.text,
     textAlign: "center" as const,
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.textSecondary,
     textAlign: "center" as const,
     lineHeight: 20,
   },
   retryButton: {
-    backgroundColor: Colors.accent,
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 12,
@@ -1238,14 +1197,12 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
   },
   sheetOverlay: {
     flex: 1,
-    backgroundColor: Colors.overlay,
   },
   sheetContainer: {
-    backgroundColor: Colors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -1260,20 +1217,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.cardBorder,
     alignSelf: "center" as const,
     marginBottom: 16,
   },
   sheetTitle: {
     fontSize: 20,
     fontWeight: "800" as const,
-    color: Colors.primary,
     marginBottom: 20,
   },
   sheetSectionLabel: {
     fontSize: 13,
     fontWeight: "700" as const,
-    color: Colors.textSecondary,
     textTransform: "uppercase" as const,
     letterSpacing: 0.8,
     marginBottom: 10,
@@ -1292,21 +1246,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 22,
-    backgroundColor: Colors.white,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
-  },
-  sheetChipActive: {
-    backgroundColor: Colors.primaryLight,
-    borderColor: Colors.primaryLight,
   },
   sheetChipText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.primary,
-  },
-  sheetChipTextActive: {
-    color: Colors.white,
   },
   sheetActions: {
     flexDirection: "row" as const,
@@ -1317,13 +1261,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: Colors.background,
     alignItems: "center" as const,
   },
   sheetSecondaryBtnText: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: Colors.textSecondary,
   },
   sheetPrimaryBtn: {
     flex: 2,
@@ -1331,24 +1273,21 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: Colors.accent,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
   sheetPrimaryBtnText: {
     fontSize: 15,
     fontWeight: "700" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: Colors.overlay,
     justifyContent: "center" as const,
     alignItems: "center" as const,
     padding: 24,
   },
   modalContent: {
-    backgroundColor: Colors.white,
     borderRadius: 20,
     padding: 20,
     width: "100%" as const,
@@ -1361,7 +1300,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "700" as const,
-    color: Colors.primary,
     textAlign: "center" as const,
     marginBottom: 16,
   },
@@ -1372,19 +1310,13 @@ const styles = StyleSheet.create({
   },
   rangeField: {
     flex: 1,
-    backgroundColor: Colors.background,
     borderRadius: 12,
     padding: 12,
     borderWidth: 2,
-    borderColor: "transparent",
-  },
-  rangeFieldActive: {
-    borderColor: Colors.accent,
   },
   rangeLabel: {
     fontSize: 11,
     fontWeight: "600" as const,
-    color: Colors.textMuted,
     textTransform: "uppercase" as const,
     letterSpacing: 0.5,
     marginBottom: 4,
@@ -1392,16 +1324,11 @@ const styles = StyleSheet.create({
   rangeValue: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: Colors.primary,
-  },
-  rangePlaceholder: {
-    color: Colors.textMuted,
   },
   rangeDivider: {
     width: 12,
     alignSelf: "center" as const,
     height: 2,
-    backgroundColor: Colors.textMuted,
     borderRadius: 1,
   },
   calendarNav: {
@@ -1414,20 +1341,17 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.background,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
   calNavText: {
     fontSize: 22,
     fontWeight: "600" as const,
-    color: Colors.primary,
     marginTop: -2,
   },
   calMonthLabel: {
     fontSize: 16,
     fontWeight: "700" as const,
-    color: Colors.primary,
   },
   calDayLabels: {
     flexDirection: "row" as const,
@@ -1438,7 +1362,6 @@ const styles = StyleSheet.create({
     textAlign: "center" as const,
     fontSize: 12,
     fontWeight: "600" as const,
-    color: Colors.textMuted,
   },
   calGrid: {
     flexDirection: "row" as const,
@@ -1450,29 +1373,9 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
-  calCellInRange: {
-    backgroundColor: Colors.accentMuted,
-  },
-  calCellSelected: {
-    backgroundColor: Colors.accent,
-    borderRadius: 20,
-  },
   calDayText: {
     fontSize: 14,
     fontWeight: "500" as const,
-    color: Colors.text,
-  },
-  calDayToday: {
-    color: Colors.accent,
-    fontWeight: "700" as const,
-  },
-  calDayTextSelected: {
-    color: Colors.white,
-    fontWeight: "700" as const,
-  },
-  calDayTextInRange: {
-    color: Colors.primary,
-    fontWeight: "600" as const,
   },
   modalActions: {
     flexDirection: "row" as const,
@@ -1483,13 +1386,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.background,
     alignItems: "center" as const,
   },
   modalSecondaryBtnText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.textSecondary,
   },
   modalPrimaryBtn: {
     flex: 1,
@@ -1497,7 +1398,6 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.accent,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
@@ -1507,6 +1407,6 @@ const styles = StyleSheet.create({
   modalPrimaryBtnText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: Colors.white,
+    color: "#FFFFFF",
   },
 });

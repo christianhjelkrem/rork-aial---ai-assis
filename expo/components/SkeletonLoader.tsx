@@ -5,7 +5,7 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -15,6 +15,7 @@ function ShimmerBlock({ width, height, borderRadius = 8, style }: {
   borderRadius?: number;
   style?: object;
 }) {
+  const { colors } = useTheme();
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -48,7 +49,7 @@ function ShimmerBlock({ width, height, borderRadius = 8, style }: {
           width: width as number,
           height,
           borderRadius,
-          backgroundColor: Colors.textMuted,
+          backgroundColor: colors.textMuted,
           opacity,
         },
         style,
@@ -58,8 +59,9 @@ function ShimmerBlock({ width, height, borderRadius = 8, style }: {
 }
 
 function SkeletonCardComponent() {
+  const { colors } = useTheme();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.card }]}>
       <ShimmerBlock width="100%" height={SCREEN_WIDTH * 0.52} borderRadius={0} />
       <View style={styles.cardContent}>
         <ShimmerBlock width="85%" height={18} borderRadius={6} />
@@ -75,6 +77,7 @@ function SkeletonCardComponent() {
 const SkeletonCard = React.memo(SkeletonCardComponent);
 
 function SkeletonCarouselComponent() {
+  const { colors } = useTheme();
   const cardWidth = SCREEN_WIDTH * 0.72;
   return (
     <View style={styles.carouselSection}>
@@ -86,7 +89,7 @@ function SkeletonCarouselComponent() {
       </View>
       <View style={styles.carouselRow}>
         {[0, 1].map((i) => (
-          <View key={i} style={[styles.carouselCard, { width: cardWidth }]}>
+          <View key={i} style={[styles.carouselCard, { width: cardWidth, backgroundColor: colors.card }]}>
             <ShimmerBlock width={cardWidth} height={cardWidth * 0.625} borderRadius={0} />
             <View style={styles.carouselCardContent}>
               <ShimmerBlock width="80%" height={14} borderRadius={5} />
@@ -103,8 +106,9 @@ function SkeletonCarouselComponent() {
 const SkeletonCarousel = React.memo(SkeletonCarouselComponent);
 
 function SkeletonSectionHeaderComponent() {
+  const { colors } = useTheme();
   return (
-    <View style={styles.sectionHeader}>
+    <View style={[styles.sectionHeader, { borderTopColor: colors.cardBorder }]}>
       <ShimmerBlock width={4} height={36} borderRadius={2} />
       <View style={{ gap: 6, flex: 1, marginLeft: 12 }}>
         <ShimmerBlock width="40%" height={18} borderRadius={6} />
@@ -205,7 +209,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   carouselCard: {
-    backgroundColor: Colors.card,
     borderRadius: 16,
     overflow: "hidden" as const,
   },
@@ -227,13 +230,11 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
     borderTopWidth: 1,
-    borderTopColor: Colors.cardBorder,
     marginTop: 4,
   },
   card: {
     marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: Colors.card,
     borderRadius: 18,
     overflow: "hidden" as const,
   },

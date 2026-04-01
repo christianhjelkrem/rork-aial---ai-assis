@@ -3,19 +3,20 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Colors from "@/constants/colors";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { colors } = useTheme();
   return (
     <Stack
       screenOptions={{
         headerBackTitle: "Tilbake",
-        headerStyle: { backgroundColor: Colors.background },
-        headerTintColor: Colors.primary,
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.primary,
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -34,9 +35,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView>
-        <RootLayoutNav />
-      </GestureHandlerRootView>
+      <ThemeProvider>
+        <GestureHandlerRootView>
+          <RootLayoutNav />
+        </GestureHandlerRootView>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
