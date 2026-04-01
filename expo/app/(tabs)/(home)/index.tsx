@@ -913,20 +913,21 @@ const styles = StyleSheet.create({
   },
   categoryTabsContent: {
     paddingHorizontal: 16,
+    paddingRight: 40,
     gap: 8,
     paddingVertical: 6,
   },
   categoryTab: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    gap: 5,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
     borderRadius: 24,
     borderWidth: 1,
   },
   categoryTabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700" as const,
   },
   subTagsScroll: {
