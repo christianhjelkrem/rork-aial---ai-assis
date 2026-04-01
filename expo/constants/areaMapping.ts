@@ -12,6 +12,43 @@ export const AREAS: Area[] = [
 ];
 
 const AREA_KEYWORDS: Record<string, string[]> = {
+  alesund: [
+    "ålesund",
+    "alesund",
+    "aalesund",
+    "sentrum",
+    "nørvøy",
+    "aspøy",
+    "hessa",
+    "borgund",
+    "spjelkavik",
+    "lerstad",
+    "blindheim",
+    "emblem",
+    "flisnes",
+    "moa",
+    "volsdalen",
+    "nørvasund",
+    "colorline",
+    "color line",
+    "jugendstilsenteret",
+    "arbeideren",
+    "parken",
+    "kulturhuset",
+    "kul†urhuset",
+    "sukkerbiten",
+    "brosundet",
+    "molja",
+    "aafk",
+    "aksla",
+    "tueneset",
+    "skarbøvik",
+    "ellingsøy",
+    "ålesund bibliotek",
+    "ålesund kirke",
+    "ålesund kulturhus",
+    "kammersalen",
+  ],
   sula: [
     "sula",
     "langevåg",
@@ -51,7 +88,7 @@ const AREA_KEYWORDS: Record<string, string[]> = {
 };
 
 export function getEventArea(locationName: string | null | undefined): string {
-  if (!locationName) return "alesund";
+  if (!locationName) return "unknown";
 
   const lower = locationName.toLowerCase();
 
@@ -63,5 +100,5 @@ export function getEventArea(locationName: string | null | undefined): string {
     }
   }
 
-  return "alesund";
+  return "unknown";
 }
