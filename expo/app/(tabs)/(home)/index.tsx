@@ -399,18 +399,21 @@ export default function EventsFeedScreen() {
     }).slice(0, 10);
   }, [eventsQuery.data, featuredEvent]);
 
-  const freeThisWeek = useMemo(() => {
+  const weekendEvents = useMemo(() => {
     const events = eventsQuery.data ?? [];
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekEnd = new Date(todayStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-    return events.filter((e) => {
-      if (!e.start_at || e.is_free !== true) return false;
+    const { start: weekendStart, end: weekendEnd } = getWeekendRange();
+    const MAX_DURATION_MS = 4 * 24 * 60 * 60 * 1000;
+    const weekend = events.filter((e) => {
+      if (!e.start_at) return false;
       const start = new Date(e.start_at);
-      return start >= todayStart && start < weekEnd;
-    }).slice(0, 10);
-  }, [eventsQuery.data]);
+      const end = e.end_at ? new Date(e.end_at) : start;
+      if (end.getTime() - start.getTime() > MAX_DURATION_MS) return false;
+      return start <= weekendEnd && end >= weekendStart && e.source_id !== featuredEvent?.source_id;
+    });
+    const paid = weekend.filter((e) => e.is_free !== true);
+    const free = weekend.filter((e) => e.is_free === true);
+    return [...paid, ...free].slice(0, 10);
+  }, [eventsQuery.data, featuredEvent]);
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -670,21 +673,21 @@ export default function EventsFeedScreen() {
           </View>
         )}
 
-        {!hasActiveFilters && freeThisWeek.length > 0 && (
+        {!hasActiveFilters && weekendEvents.length > 0 && (
           <View style={styles.carouselSection}>
             <View style={styles.carouselHeader}>
               <View style={styles.carouselTitleRow}>
-                <View style={[styles.carouselDot, { backgroundColor: Colors.free }]} />
-                <Text style={styles.carouselTitle}>Gratis denne uken</Text>
+                <View style={[styles.carouselDot, { backgroundColor: Colors.primaryLight }]} />
+                <Text style={styles.carouselTitle}>I helgen</Text>
               </View>
-              <Text style={styles.carouselCount}>{freeThisWeek.length}</Text>
+              <Text style={styles.carouselCount}>{weekendEvents.length}</Text>
             </View>
             <FlatList
-              data={freeThisWeek}
+              data={weekendEvents}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.carouselContent}
-              keyExtractor={(item) => `free-${item.source_id}`}
+              keyExtractor={(item) => `weekend-${item.source_id}`}
               renderItem={({ item }) => <EventCardCarousel event={item} />}
               ItemSeparatorComponent={() => <View style={{ width: CAROUSEL_CARD_GAP }} />}
               snapToInterval={CAROUSEL_CARD_WIDTH + CAROUSEL_CARD_GAP}
@@ -708,7 +711,7 @@ export default function EventsFeedScreen() {
         </View>
       </View>
     ),
-    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, hasActiveFilters, featuredEvent, tonightEvents, freeThisWeek, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters]
+    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, hasActiveFilters, featuredEvent, tonightEvents, weekendEvents, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters]
   );
 
   const renderEmpty = useMemo(() => {
