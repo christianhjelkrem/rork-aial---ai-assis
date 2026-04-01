@@ -8,7 +8,6 @@ import {
   Pressable,
   RefreshControl,
   Animated,
-  ActivityIndicator,
   Modal,
   Platform,
   ScrollView,
@@ -38,6 +37,7 @@ import { EventData } from "@/types/event";
 import { fetchEvents, fetchAllTags } from "@/lib/events";
 import { EventCard } from "@/components/EventCard";
 import { EventCardCarousel, CAROUSEL_CARD_WIDTH, CAROUSEL_CARD_GAP } from "@/components/EventCardCarousel";
+import { SkeletonFeed } from "@/components/SkeletonLoader";
 import { TAG_HIERARCHY } from "@/constants/tagHierarchy";
 import { AREAS, getEventArea } from "@/constants/areaMapping";
 import { groupEventsByDate } from "@/lib/dateUtils";
@@ -692,15 +692,6 @@ export default function EventsFeedScreen() {
   );
 
   const renderEmpty = useMemo(() => {
-    if (eventsQuery.isLoading) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={Colors.accent} />
-          <Text style={styles.emptyText}>Laster arrangementer...</Text>
-        </View>
-      );
-    }
-
     if (eventsQuery.isError) {
       return (
         <View style={styles.emptyContainer}>
@@ -727,7 +718,7 @@ export default function EventsFeedScreen() {
         </Text>
       </View>
     );
-  }, [eventsQuery.isLoading, eventsQuery.isError, eventsQuery.error, search, selectedCategory, dateFilter, onRefresh]);
+  }, [eventsQuery.isError, eventsQuery.error, search, selectedCategory, dateFilter, onRefresh]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -736,6 +727,11 @@ export default function EventsFeedScreen() {
         <Text style={styles.headerSubtitle}>{todayLabel}</Text>
       </Animated.View>
 
+      {eventsQuery.isLoading ? (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <SkeletonFeed />
+        </ScrollView>
+      ) : (
       <FlatList
         data={listData}
         renderItem={renderItem}
@@ -758,6 +754,7 @@ export default function EventsFeedScreen() {
         )}
         scrollEventThrottle={16}
       />
+      )}
 
       <Modal
         visible={showFilterSheet}
