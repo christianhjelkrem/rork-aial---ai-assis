@@ -37,6 +37,8 @@ import Colors from "@/constants/colors";
 import { EventData } from "@/types/event";
 import { fetchEvents, fetchAllTags } from "@/lib/events";
 import { EventCard } from "@/components/EventCard";
+import { EventCardCarousel, CAROUSEL_CARD_WIDTH, CAROUSEL_CARD_GAP } from "@/components/EventCardCarousel";
+import { HeroCard } from "@/components/HeroCard";
 import { TAG_HIERARCHY } from "@/constants/tagHierarchy";
 import { AREAS, getEventArea } from "@/constants/areaMapping";
 import { groupEventsByDate } from "@/lib/dateUtils";
@@ -364,6 +366,52 @@ export default function EventsFeedScreen() {
     setSearch("");
   }, []);
 
+  const hasActiveFilters = useMemo(() => {
+    return search.trim().length > 0 || selectedCategory !== "all" || selectedSubTags.length > 0 || selectedAreas.length > 0 || showFreeOnly || dateFilter !== "all";
+  }, [search, selectedCategory, selectedSubTags, selectedAreas, showFreeOnly, dateFilter]);
+
+  const featuredEvent = useMemo(() => {
+    const events = eventsQuery.data ?? [];
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart);
+    todayEnd.setHours(23, 59, 59, 999);
+    const todayEvents = events.filter((e) => {
+      if (!e.start_at) return false;
+      const start = new Date(e.start_at);
+      return start >= todayStart && start <= todayEnd && e.image_url;
+    });
+    if (todayEvents.length > 0) return todayEvents[0];
+    const withImage = events.filter((e) => e.image_url && e.start_at);
+    return withImage.length > 0 ? withImage[0] : null;
+  }, [eventsQuery.data]);
+
+  const tonightEvents = useMemo(() => {
+    const events = eventsQuery.data ?? [];
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+    return events.filter((e) => {
+      if (!e.start_at) return false;
+      const start = new Date(e.start_at);
+      return start >= todayStart && start < tomorrowStart && e.source_id !== featuredEvent?.source_id;
+    }).slice(0, 10);
+  }, [eventsQuery.data, featuredEvent]);
+
+  const freeThisWeek = useMemo(() => {
+    const events = eventsQuery.data ?? [];
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekEnd = new Date(todayStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    return events.filter((e) => {
+      if (!e.start_at || e.is_free !== true) return false;
+      const start = new Date(e.start_at);
+      return start >= todayStart && start < weekEnd;
+    }).slice(0, 10);
+  }, [eventsQuery.data]);
+
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
     outputRange: [1, 0.95],
@@ -593,10 +641,65 @@ export default function EventsFeedScreen() {
           </Pressable>
         </View>
 
+        {!hasActiveFilters && featuredEvent && (
+          <View style={styles.heroSection}>
+            <HeroCard event={featuredEvent} />
+          </View>
+        )}
+
+        {!hasActiveFilters && tonightEvents.length > 0 && (
+          <View style={styles.carouselSection}>
+            <View style={styles.carouselHeader}>
+              <View style={styles.carouselTitleRow}>
+                <View style={styles.carouselDot} />
+                <Text style={styles.carouselTitle}>Skjer i dag</Text>
+              </View>
+              <Text style={styles.carouselCount}>{tonightEvents.length}</Text>
+            </View>
+            <FlatList
+              data={tonightEvents}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carouselContent}
+              keyExtractor={(item) => `tonight-${item.source_id}`}
+              renderItem={({ item }) => <EventCardCarousel event={item} />}
+              ItemSeparatorComponent={() => <View style={{ width: CAROUSEL_CARD_GAP }} />}
+              snapToInterval={CAROUSEL_CARD_WIDTH + CAROUSEL_CARD_GAP}
+              decelerationRate="fast"
+            />
+          </View>
+        )}
+
+        {!hasActiveFilters && freeThisWeek.length > 0 && (
+          <View style={styles.carouselSection}>
+            <View style={styles.carouselHeader}>
+              <View style={styles.carouselTitleRow}>
+                <View style={[styles.carouselDot, { backgroundColor: Colors.free }]} />
+                <Text style={styles.carouselTitle}>Gratis denne uken</Text>
+              </View>
+              <Text style={styles.carouselCount}>{freeThisWeek.length}</Text>
+            </View>
+            <FlatList
+              data={freeThisWeek}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carouselContent}
+              keyExtractor={(item) => `free-${item.source_id}`}
+              renderItem={({ item }) => <EventCardCarousel event={item} />}
+              ItemSeparatorComponent={() => <View style={{ width: CAROUSEL_CARD_GAP }} />}
+              snapToInterval={CAROUSEL_CARD_WIDTH + CAROUSEL_CARD_GAP}
+              decelerationRate="fast"
+            />
+          </View>
+        )}
+
         <View style={styles.resultRow}>
-          <Text style={styles.resultCountText}>
-            {filteredEvents.length} {filteredEvents.length === 1 ? "arrangement" : "arrangementer"}
-          </Text>
+          <View style={styles.resultRowLeft}>
+            <View style={styles.resultAccent} />
+            <Text style={styles.resultCountText}>
+              {hasActiveFilters ? `${filteredEvents.length} ${filteredEvents.length === 1 ? "treff" : "treff"}` : "Alle arrangementer"}
+            </Text>
+          </View>
           {activeFiltersCount > 0 && (
             <Pressable onPress={clearAllFilters} hitSlop={6}>
               <Text style={styles.clearAllText}>Nullstill filtre</Text>
@@ -605,7 +708,7 @@ export default function EventsFeedScreen() {
         </View>
       </View>
     ),
-    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters]
+    [search, categoryTabs, selectedCategory, selectedSubTags, availableSubTags, showFreeOnly, filteredEvents.length, dateFilter, dateFilterLabel, activeFiltersCount, advancedFilterCount, hasActiveFilters, featuredEvent, tonightEvents, freeThisWeek, clearSearch, selectCategory, toggleSubTag, toggleFreeOnly, selectDateFilter, clearAllFilters]
   );
 
   const renderEmpty = useMemo(() => {
@@ -1017,18 +1120,70 @@ const styles = StyleSheet.create({
     fontWeight: "800" as const,
     color: Colors.white,
   },
+  heroSection: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  carouselSection: {
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  carouselHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  carouselTitleRow: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+  },
+  carouselDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.accent,
+  },
+  carouselTitle: {
+    fontSize: 17,
+    fontWeight: "800" as const,
+    color: Colors.primary,
+    letterSpacing: -0.2,
+  },
+  carouselCount: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: Colors.textMuted,
+  },
+  carouselContent: {
+    paddingHorizontal: 16,
+  },
   resultRow: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "space-between" as const,
     paddingHorizontal: 20,
     paddingBottom: 8,
-    paddingTop: 4,
+    paddingTop: 16,
+  },
+  resultRowLeft: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+  },
+  resultAccent: {
+    width: 3,
+    height: 16,
+    borderRadius: 2,
+    backgroundColor: Colors.accent,
   },
   resultCountText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    fontWeight: "500" as const,
+    fontSize: 15,
+    color: Colors.primary,
+    fontWeight: "700" as const,
   },
   clearAllText: {
     fontSize: 13,
