@@ -12,6 +12,13 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { FlashList as RawFlashList } from "@shopify/flash-list";
+
+// FlashList v2 types are incompatible with React 19 JSX types at compile time
+// Runtime behavior is correct - this is a type-level workaround
+const FlashListTyped = RawFlashList as unknown as typeof FlatList & {
+  defaultProps?: { estimatedItemSize?: number };
+};
 import { useQuery } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -733,14 +740,17 @@ export default function EventsFeedScreen() {
           <SkeletonFeed />
         </ScrollView>
       ) : (
-      <FlatList
+      <FlashListTyped
         data={listData}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingBottom: 20 } as any}
         showsVerticalScrollIndicator={false}
+        // @ts-expect-error FlashList-specific prop not in FlatList types
+        estimatedItemSize={300}
+        getItemType={(item: ListItem) => item.type}
         refreshControl={
           <RefreshControl
             refreshing={eventsQuery.isFetching && !eventsQuery.isLoading}
