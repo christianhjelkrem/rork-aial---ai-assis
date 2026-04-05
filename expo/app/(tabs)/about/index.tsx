@@ -16,7 +16,8 @@ const DATA_SOURCES = [
   "Ålesund bibliotek",
   "Ticketmaster",
   "Bypatrioten",
-  "Visit Ålesund",
+  "AAFK",
+  "Odeon kino",
 ];
 
 export default function AboutScreen() {
