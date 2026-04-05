@@ -2,6 +2,31 @@ import { EventData, EventsResponse } from "@/types/event";
 
 const EVENTS_URL = "https://cdn.jsdelivr.net/gh/larsohj/iaal@main/docs/events.json";
 
+async function fetchWithRetry(url: string, retries = 3, delayMs = 1500): Promise<Response> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`[events] Fetch attempt ${attempt}/${retries}: ${url}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(url, {
+        headers: { "Cache-Control": "no-cache" },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      return response;
+    } catch (err) {
+      console.warn(`[events] Fetch attempt ${attempt} failed:`, err);
+      if (attempt === retries) {
+        throw new Error(`Kunne ikke koble til server etter ${retries} forsøk`);
+      }
+      const wait = delayMs * attempt;
+      console.log(`[events] Retrying in ${wait}ms...`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+  throw new Error("Fetch failed after all retries");
+}
+
 function normalizeTitle(title: string): string {
   return title
     .toLowerCase()
@@ -143,7 +168,7 @@ function deduplicateEvents(events: EventData[]): EventData[] {
 export async function fetchEvents(): Promise<EventData[]> {
   console.log("[events] Fetching events from GitHub CDN...");
 
-  const response = await fetch(EVENTS_URL);
+  const response = await fetchWithRetry(EVENTS_URL);
   if (!response.ok) {
     console.error(`[events] HTTP error: ${response.status} ${response.statusText}`);
     throw new Error(`Kunne ikke laste arrangementer (HTTP ${response.status})`);
@@ -194,7 +219,7 @@ export async function fetchAllCities(): Promise<string[]> {
   console.log("[events] Extracting cities from events...");
 
   try {
-    const response = await fetch(EVENTS_URL);
+    const response = await fetchWithRetry(EVENTS_URL);
     if (!response.ok) {
       console.error(`[events] HTTP error fetching cities: ${response.status}`);
       return [];
@@ -217,7 +242,7 @@ export async function fetchAllTags(): Promise<string[]> {
   console.log("[events] Extracting tags from events...");
 
   try {
-    const response = await fetch(EVENTS_URL);
+    const response = await fetchWithRetry(EVENTS_URL);
     if (!response.ok) {
       console.error(`[events] HTTP error fetching tags: ${response.status}`);
       return [];
