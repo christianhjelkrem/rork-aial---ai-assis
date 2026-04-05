@@ -57,7 +57,9 @@ function mergeDuplicate(existing: EventData, incoming: EventData): EventData {
   if (!merged.location_name && incoming.location_name) {
     merged.location_name = incoming.location_name;
   }
-  if (!merged.url && incoming.url) {
+  if (incoming.url && incoming.source === "friskus") {
+    merged.url = incoming.url;
+  } else if (!merged.url && incoming.url) {
     merged.url = incoming.url;
   }
   if (!merged.price_text && incoming.price_text) {
