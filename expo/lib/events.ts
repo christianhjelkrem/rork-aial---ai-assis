@@ -83,6 +83,19 @@ function mergeDuplicate(existing: EventData, incoming: EventData): EventData {
   return merged;
 }
 
+function fixFriskusUrl(event: EventData): string | null {
+  if (event.source !== "friskus" || !event.url) return event.url;
+  const uuid = event.source_id.replace("friskus-", "");
+  if (!uuid) return event.url;
+  try {
+    const parsed = new URL(event.url);
+    const host = parsed.host;
+    return `https://${host}/activity/${uuid}`;
+  } catch {
+    return event.url;
+  }
+}
+
 function areDatesClose(a: string | null, b: string | null): boolean {
   if (!a || !b) return !a && !b;
   const dA = new Date(a).getTime();
@@ -183,7 +196,13 @@ export async function fetchEvents(): Promise<EventData[]> {
 
   const deduped = deduplicateEvents(upcoming);
   console.log(`[events] After deduplication: ${deduped.length} unique (removed ${upcoming.length - deduped.length} duplicates)`);
-  return deduped;
+
+  const fixed = deduped.map((e) => ({
+    ...e,
+    url: fixFriskusUrl(e),
+  }));
+
+  return fixed;
 }
 
 export async function fetchAllCities(): Promise<string[]> {
