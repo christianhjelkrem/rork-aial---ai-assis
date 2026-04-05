@@ -90,7 +90,7 @@ function fixFriskusUrl(event: EventData): string | null {
   try {
     const parsed = new URL(event.url);
     const host = parsed.host;
-    return `https://${host}/activity/${uuid}`;
+    return `https://${host}/events/${uuid}`;
   } catch {
     return event.url;
   }
