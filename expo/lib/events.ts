@@ -1,6 +1,9 @@
 import { EventData, EventsResponse } from "@/types/event";
 
-const EVENTS_URL = "https://cdn.jsdelivr.net/gh/larsohj/iaal@main/docs/events.json";
+const EVENTS_URLS = [
+  "https://cdn.jsdelivr.net/gh/larsohj/iaal@main/docs/events.json",
+  "https://raw.githubusercontent.com/larsohj/iaal/main/docs/events.json",
+];
 
 let cachedResponse: EventsResponse | null = null;
 let cacheTimestamp = 0;
@@ -12,32 +15,40 @@ async function fetchEventsJson(): Promise<EventsResponse> {
     console.log("[events] Using cached events JSON");
     return cachedResponse;
   }
-  const response = await fetchWithRetry(EVENTS_URL);
-  if (!response.ok) {
-    throw new Error(`Kunne ikke laste arrangementer (HTTP ${response.status})`);
+
+  let lastError: Error = new Error("Ingen URL tilgjengelig");
+  for (const url of EVENTS_URLS) {
+    try {
+      console.log(`[events] Trying URL: ${url}`);
+      const response = await fetchWithRetry(url, 2, 1000);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const json: EventsResponse = await response.json();
+      cachedResponse = json;
+      cacheTimestamp = now;
+      return json;
+    } catch (err) {
+      console.warn(`[events] URL failed (${url}):`, err);
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
-  const json: EventsResponse = await response.json();
-  cachedResponse = json;
-  cacheTimestamp = now;
-  return json;
+  throw new Error(`Kunne ikke laste arrangementer: ${lastError.message}`);
 }
 
-async function fetchWithRetry(url: string, retries = 3, delayMs = 1500): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 2, delayMs = 1000): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`[events] Fetch attempt ${attempt}/${retries}: ${url}`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-      const response = await fetch(url, {
-        headers: { "Cache-Control": "no-cache" },
-        signal: controller.signal,
-      });
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
       return response;
     } catch (err) {
       console.warn(`[events] Fetch attempt ${attempt} failed:`, err);
       if (attempt === retries) {
-        throw new Error(`Kunne ikke koble til server etter ${retries} forsøk`);
+        throw err;
       }
       const wait = delayMs * attempt;
       console.log(`[events] Retrying in ${wait}ms...`);
